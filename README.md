@@ -60,3 +60,41 @@ Dockerfile
 
     ENTRYPOINT ["/entrypoint.sh"]
     CMD []
+
+
+## more effective
+entrypoint.yml
+
+    service:
+      rsyslog:
+        type: service
+        pid: /var/run/syslogd.pid
+        start: "service rsyslog restart"
+        stop: "service rsyslog stop"
+        monitor_interval: 3
+        monitor_delay: 3
+        restart: always
+      cron:
+        type: background
+        pid: /var/run/crond.pid
+        start: "/usr/sbin/crond"
+        monitor_interval: 3
+        monitor_delay: 3
+        restart: always
+      redis:
+        type foreground
+        start:
+          - "/usr/sbin/redis-server"
+        stop_signal: SIGTERM
+        restart: always
+    stdout:
+      - /var/log/cron
+      - /var/log/messages
+    start:
+      - rsyslog
+      - cron
+      - redis
+    stop:
+      - redis
+      - cron
+      - rsyslog
